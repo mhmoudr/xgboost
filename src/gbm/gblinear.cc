@@ -214,6 +214,25 @@ class GBLinear : public GradientBooster {
         }
       }
     }
+    // forcing monotonicity
+    std::vector<MonotonicFactor> monotonicFactors = param.getMonotonicFactors();
+    for (int l = 0; l < monotonicFactors.size(); ++l) {
+      MonotonicFactor mf = monotonicFactors[l];
+      switch (mf.direction) {
+        case 1:
+          if (model.weight[mf.factor_index] < 0) {
+            if (mf.method == 'r') model.weight[mf.factor_index] = 0;
+            //TODO: implement grouping
+          }
+          break;
+        case -1:
+          if (model.weight[mf.factor_index] > 0) {
+            if (mf.method == 'r') model.weight[mf.factor_index] = 0;
+            //TODO: implement grouping
+          }
+          break;
+      }
+    }
     LogWeights();
   }
   void LogWeights() {
