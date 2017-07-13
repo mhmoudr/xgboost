@@ -40,8 +40,18 @@ struct GBLinearModelParam :public dmlc::Parameter<GBLinearModelParam> {
   }
 };
 
+struct MonotonicFactor {
+  int factor_index;
+  int direction;
+  char method;
+};
+
 // training parameter
 struct GBLinearTrainParam : public dmlc::Parameter<GBLinearTrainParam> {
+ private:
+  bool is_monotonic_factors_processed = false;
+  std::vector<MonotonicFactor> monotonicFactors;
+ public:
   /*! \brief learning_rate */
   float learning_rate;
   /*! \brief regularization weight for L2 norm */
@@ -50,6 +60,38 @@ struct GBLinearTrainParam : public dmlc::Parameter<GBLinearTrainParam> {
   float reg_alpha;
   /*! \brief regularization weight for L2 norm in bias */
   float reg_lambda_bias;
+  /*! \brief monotonicity configuration list FeatureIndex,Direction[1,-1],Action[g:Grouping,r:Remove]; ex: 1,1,r;13,-1,g */
+  std::string monotonicity_list;
+
+  std::vector<MonotonicFactor> getMonotonicFactors() {
+    if (is_monotonic_factors_processed) return monotonicFactors;
+    std::vector<std::string> factorConf = splitString(monotonicity_list, ";");
+    for (int i = 0; i < factorConf.size(); ++i) {
+      std::vector<std::string> elements = splitString(factorConf[i], ",");
+      MonotonicFactor factor;
+      std::stringstream(elements[0]) >> factor.factor_index;
+      std::stringstream(elements[1]) >> factor.direction;
+      factor.method = elements[2][0];
+      monotonicFactors.push_back(factor);
+    }
+    is_monotonic_factors_processed = true;
+    return monotonicFactors;
+  }
+
+  std::vector<std::string> splitString(std::string &str, std::string delimiter) {
+    std::vector<std::string> result;
+    size_t pos = 0;
+    while (str.substr(pos).find(delimiter) != std::string::npos) {
+      //Insert the substring from pos to the start of the found delimiter to the vector
+      result.push_back(str.substr(pos, str.substr(pos).find(delimiter)));
+      //Move the pos past this found section and the found delimiter so the search can continue
+      pos += str.substr(pos).find(delimiter) + delimiter.size();
+    }
+    //Push back the final element in str when str contains no more delimiters
+    result.push_back(str.substr(pos));
+    return result;
+  }
+
   // declare parameters
   DMLC_DECLARE_PARAMETER(GBLinearTrainParam) {
     DMLC_DECLARE_FIELD(learning_rate).set_lower_bound(0.0f).set_default(1.0f)
@@ -65,6 +107,9 @@ struct GBLinearTrainParam : public dmlc::Parameter<GBLinearTrainParam> {
     DMLC_DECLARE_ALIAS(reg_lambda, lambda);
     DMLC_DECLARE_ALIAS(reg_alpha, alpha);
     DMLC_DECLARE_ALIAS(reg_lambda_bias, lambda_bias);
+    DMLC_DECLARE_FIELD(monotonicity_list).set_default("")
+        .describe(
+            "monotonicity configuration list FeatureIndex,Direction[1,-1],Action[g:Grouping,r:Remove]; ex: 1,1,r;13,-1,g ");
   }
   // given original weight calculate delta
   inline double CalcDelta(double sum_grad, double sum_hess, double w) const {
