@@ -236,14 +236,14 @@ class GBLinear : public GradientBooster {
     LogWeights();
   }
   void LogWeights() {
-      std::ostringstream str;
-      str << std::fixed;
-      str << "ws: ";
-      for (int k = 0; k < model.weight.size(); ++k) {
-          str << model.weight[k] << ", ";
-      }
-      LOG(CONSOLE) << str.str();
+    std::ostringstream str;
+    str << std::fixed;
+    //str << "ws: ";
+    for (int k = 0; k < model.weight.size(); ++k) {
+      str << model.weight[k] << ", ";
     }
+    std::cout << str.str() << std::endl;
+  }
   void Predict(DMatrix *p_fmat,
                std::vector<bst_float> *out_preds,
                unsigned ntree_limit) override {
