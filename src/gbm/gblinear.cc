@@ -165,11 +165,21 @@ class GBLinear : public GradientBooster {
             if (p.hess < 0.0f) continue;
             p.grad += p.hess * col[j].fvalue * dw;
           }
+
         }
       }
     }
+    LogWeights();
   }
-
+  void LogWeights() {
+      std::ostringstream str;
+      str << std::fixed;
+      str << "ws: ";
+      for (int k = 0; k < model.weight.size(); ++k) {
+          str << model.weight[k] << ", ";
+      }
+      LOG(CONSOLE) << str.str();
+    }
   void Predict(DMatrix *p_fmat,
                std::vector<bst_float> *out_preds,
                unsigned ntree_limit) override {
