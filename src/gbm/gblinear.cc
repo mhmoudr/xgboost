@@ -65,6 +65,13 @@ struct GBLinearTrainParam : public dmlc::Parameter<GBLinearTrainParam> {
 
   std::vector<MonotonicFactor> getMonotonicFactors() {
     if (is_monotonic_factors_processed) return monotonicFactors;
+
+    // in case configuration is not provided.
+    if (monotonicity_list == "" ) {
+      is_monotonic_factors_processed = true;
+      return monotonicFactors;
+    }
+
     std::vector<std::string> factorConf = splitString(monotonicity_list, ";");
     for (int i = 0; i < factorConf.size(); ++i) {
       std::vector<std::string> elements = splitString(factorConf[i], ",");
