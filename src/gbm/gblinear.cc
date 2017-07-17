@@ -73,7 +73,7 @@ struct GBLinearTrainParam : public dmlc::Parameter<GBLinearTrainParam> {
     }
 
     std::vector<std::string> factorConf = splitString(monotonicity_list, ";");
-    for (int i = 0; i < factorConf.size(); ++i) {
+    for (uint i = 0; i < factorConf.size(); ++i) {
       std::vector<std::string> elements = splitString(factorConf[i], ",");
       MonotonicFactor factor;
       std::stringstream(elements[0]) >> factor.factor_index;
@@ -223,7 +223,7 @@ class GBLinear : public GradientBooster {
     }
     // forcing monotonicity
     std::vector<MonotonicFactor> monotonicFactors = param.getMonotonicFactors();
-    for (int l = 0; l < monotonicFactors.size(); ++l) {
+    for (uint l = 0; l < monotonicFactors.size(); ++l) {
       MonotonicFactor mf = monotonicFactors[l];
       switch (mf.direction) {
         case 1:
@@ -246,7 +246,7 @@ class GBLinear : public GradientBooster {
     std::ostringstream str;
     str << std::fixed;
     //str << "ws: ";
-    for (int k = 0; k < model.weight.size(); ++k) {
+    for (uint k = 0; k < model.weight.size(); ++k) {
       str << model.weight[k] << ", ";
     }
     std::cout << str.str() << std::endl;
