@@ -221,6 +221,47 @@ class GBLinear : public GradientBooster {
         }
       }
     }
+    // forcing validation rules
+    // 174 > 176 > 177 > 178 > 173
+    // 174 > 176 > 177 > 179 > 173
+    // 174 > 175 > 177 > 178 > 173
+    // 174 > 175 > 177 > 179 > 173
+//    std::vector<std::vector<uint>> rules = {
+//        {174 , 176 , 177 , 178 , 173},
+//        {174 , 175 , 177 , 178 , 173},
+//        {174 , 175 , 177 , 179 , 173},
+//        {174 , 176 , 177 , 179 , 173}
+//    };
+
+    std::vector<std::vector<uint>> rules = {
+        {130, 132},
+        {130, 131, 133},
+        {131, 133},
+        {130, 134},
+        {131, 134},
+        {130, 135},
+        {131, 135},
+    };
+
+    for (uint l = 0; l < rules.size(); ++l) {
+      std::vector<uint> rule = rules[l];
+      bool isRuleAffected;
+      do {
+        isRuleAffected = false;
+        for (uint ruleItemIndex = 0; ruleItemIndex < rule.size() - 1; ++ruleItemIndex) {
+          if (model.weight[rule[ruleItemIndex]] < model.weight[rule[ruleItemIndex + 1]]) {
+            bst_float newWeight = 0;
+            for (uint j = ruleItemIndex; j < rule.size(); ++j)
+              newWeight += model.weight[rule[j]];
+            newWeight = newWeight / (rule.size() - ruleItemIndex);
+            for (uint j = ruleItemIndex; j < rule.size(); ++j)
+              model.weight[rule[j]] = newWeight;
+            isRuleAffected = true;
+            break;
+          }
+        }
+      } while (isRuleAffected);
+    }
     // forcing monotonicity
     std::vector<MonotonicFactor> monotonicFactors = param.getMonotonicFactors();
     for (uint l = 0; l < monotonicFactors.size(); ++l) {
